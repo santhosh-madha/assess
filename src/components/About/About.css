@@ -1,0 +1,116 @@
+.about-page {
+  padding: 40px 20px 80px;
+}
+
+.about-hero {
+  text-align: center;
+  padding: 60px 20px;
+  margin-bottom: 40px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(14, 165, 233, 0.05));
+}
+
+.about-hero h1 {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.about-hero .subtitle {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.about-card {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.about-card h2 {
+  margin-bottom: 20px;
+  color: var(--accent-primary);
+}
+
+.about-card p {
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+.about-list {
+  list-style: none;
+  padding: 0;
+}
+
+.about-list li {
+  margin-bottom: 15px;
+  color: var(--text-muted);
+}
+
+.about-values {
+  padding: 60px 40px;
+  text-align: center;
+}
+
+.about-values h2 {
+    margin-bottom: 40px;
+    font-size: 2rem;
+}
+
+.values-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.value-item .value-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.value-item h3 {
+  margin-bottom: 10px;
+  color: var(--text-main);
+}
+
+.value-item p {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .values-row {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}
+
+@media (max-width: 600px) {
+  .about-hero h1 {
+    font-size: 2.2rem;
+  }
+}

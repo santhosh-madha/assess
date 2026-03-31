@@ -17,6 +17,8 @@ import TrendingProperties from './components/Home/TrendingProperties';
 import AdminLogin from './components/Admin/AdminLogin';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import Inbox from './components/Chat/Inbox';
+import About from './components/About/About';
+import Footer from './components/Footer/Footer';
 
 const App = () => {
   return (
@@ -41,7 +43,9 @@ const App = () => {
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/messages" element={<Inbox />} />
+            <Route path="/aboutus" element={<About />} />
         </Routes>
+        <Footer />
       </Router>
     </AuthProvider>
   )

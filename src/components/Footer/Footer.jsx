@@ -1,36 +1,45 @@
-import React from 'react'
-import {Link, useLocation} from "react-router-dom"
+import React from 'react';
+import { Link } from 'react-router-dom';
+import './Footer.css';
 
 const Footer = () => {
-    const location = useLocation();
-    const isHomePage = location.pathname === '/';
   return (
-    <>
-        <footer className={isHomePage ? "homePage_footer otherPage_footer" : "otherPage_footer"}>
-            <div className="container">
-                <h4>PROPERTY RENTAL</h4>
-                <p>Hello, the pain itself is a love of consectetur adipisicing elite. True, but what or that this, love to achieve to pain pleasure that pains work accuse explain greater less, except is pain any?</p>
-                <ul>
-                    <li>
-                        <Link to={'/'}>Home</Link>    
-                    </li>
-                    <li>
-                        <Link to={'/termsandconditions'}>Terms And Conditions</Link>    
-                    </li>
-                    <li>
-                        <Link to={'/contact'}>Contact</Link>    
-                    </li>    
-                </ul>    
-            </div> 
-            <div className="container">
-                <h4>Connect with us</h4>
-                <p>+91 000 000 0000</p>
-                <p>ozgur@gmail.com</p>
-                <p>All Rights Reservsed By Ozgur</p>
-            </div>
-        </footer>
-    </>
-  )
-}
+    <footer className="main-footer glass-panel">
+      <div className="footer-container container">
+        <div className="footer-brand">
+          <Link to="/" className="footer-logo">Echo<span>Loom</span></Link>
+          <p className="footer-slogan">Seamless Stays, Handcrafted for You.</p>
+        </div>
 
-export default Footer
+        <div className="footer-nav">
+          <div className="footer-col">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><Link to="/explore">Explore Properties</Link></li>
+              <li><Link to="/aboutus">About Us</Link></li>
+              <li><Link to="/profile">My Account</Link></li>
+            </ul>
+          </div>
+
+          <div className="footer-col">
+            <h4>Customer Care</h4>
+            <ul className="support-details">
+              <li>✉️ <strong>Email:</strong> <a href="mailto:support.echoloom@gmail.com">support.echoloom@gmail.com</a></li>
+              <li>📞 <strong>Phone:</strong> <a href="tel:+15550123499">+1 (555) 012-3499</a></li>
+              <li>📍 <strong>Address:</strong> 123 Looming Heights, NY 10001</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="footer-bottom container">
+        <p>&copy; {new Date().getFullYear()} EchoLoom Property Rentals. All rights reserved.</p>
+        <div className="legal-links">
+          <span>Privacy Policy</span> • <span>Terms of Service</span>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

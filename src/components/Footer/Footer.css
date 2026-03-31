@@ -1,0 +1,123 @@
+.main-footer {
+  margin-top: 80px;
+  background: var(--bg-card);
+  padding: 80px 20px 40px;
+  border-top-left-radius: 40px;
+  border-top-right-radius: 40px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--glass-border);
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-bottom: 60px;
+}
+
+.footer-brand .footer-logo {
+  font-size: 2rem;
+  font-weight: 800;
+  text-decoration: none;
+  color: var(--text-main);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.footer-brand span {
+  color: var(--accent-primary);
+}
+
+.footer-slogan {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  max-width: 250px;
+}
+
+.footer-nav {
+  display: flex;
+  gap: 80px;
+  flex-wrap: wrap;
+}
+
+.footer-col h4 {
+  font-size: 1.1rem;
+  margin-bottom: 25px;
+  color: var(--text-main);
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-col ul li {
+  margin-bottom: 15px;
+}
+
+.footer-col ul li a {
+  text-decoration: none;
+  color: var(--text-muted);
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+.footer-col ul li a:hover {
+  color: var(--accent-primary);
+  padding-left: 5px;
+}
+
+.support-details li {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.support-details li a {
+  color: var(--accent-primary) !important;
+  font-weight: 600;
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--glass-border);
+  padding-top: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.legal-links span {
+  cursor: pointer;
+}
+
+.legal-links span:hover {
+  color: var(--accent-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .footer-slogan {
+    margin: 0 auto;
+  }
+  
+  .footer-nav {
+    justify-content: center;
+    gap: 40px;
+  }
+  
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+}
