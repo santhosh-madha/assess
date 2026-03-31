@@ -11,12 +11,8 @@ const RenterDashboard = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!user || user.role !== 'renter') {
-            navigate('/');
-            return;
-        }
-
         const fetchTrips = async () => {
+            if (!user || user.role !== 'renter') return;
             try {
                 const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/bookings/my-bookings`, {
                     headers: { Authorization: `Bearer ${token}` }
@@ -30,7 +26,7 @@ const RenterDashboard = () => {
         };
 
         fetchTrips();
-    }, [user, token, navigate]);
+    }, [user, token]);
 
     if (!user || user.role !== 'renter') return null;
     

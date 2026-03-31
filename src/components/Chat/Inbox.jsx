@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -17,13 +18,6 @@ const Inbox = () => {
     
     const socket = useRef(null);
     const messagesEndRef = useRef(null);
-    
-    // Forced Security Redirect
-    useEffect(() => {
-        if (!user && !token) {
-            navigate('/');
-        }
-    }, [user, token, navigate]);
 
     const markAsRead = async (partnerId) => {
         try {

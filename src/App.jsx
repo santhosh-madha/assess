@@ -1,5 +1,5 @@
-import React, { useContext } from 'react'
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import React, { useContext, useEffect } from 'react'
+import {BrowserRouter as Router, Routes, Route, useLocation, useNavigate} from 'react-router-dom';
 import Navbar from './components/Navbar/Navbar';
 import HeroSection from './components/Home/HeroSection';
 import PropertyList from './components/Property/PropertyList';
@@ -22,6 +22,23 @@ import Footer from './components/Footer/Footer';
 import AuthLoadingOverlay from './components/Auth/AuthLoadingOverlay';
 import { AuthContext } from './context/AuthContext';
 
+const SessionManager = () => {
+    const { user, token } = useContext(AuthContext);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const protectedRoutes = ['/dashboard', '/renter-dashboard', '/profile', '/messages', '/admin-dashboard'];
+        const isPrivateRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
+
+        if (!user && !token && isPrivateRoute) {
+            navigate('/');
+        }
+    }, [user, token, location, navigate]);
+
+    return null;
+};
+
 const App = () => {
   const { isAuthMoving } = useContext(AuthContext);
   
@@ -29,6 +46,7 @@ const App = () => {
     <>
         {isAuthMoving && <AuthLoadingOverlay message={isAuthMoving === 'login' ? 'Syncing Session...' : 'Clearing Vault...'} />}
       <Router>
+        <SessionManager />
         <AuthModal />
         <Navbar />
         <Routes>
