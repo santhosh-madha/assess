@@ -4,31 +4,74 @@ const Booking = require('../models/Booking');
 const Property = require('../models/Property');
 const User = require('../models/User');
 
-// Validate if two users have a PAID/confirmed booking between them
+// -----------------------------------------------------------------------
+// FIXED: Proper two-step lookup instead of broken populate+match pattern
+// populate({ match }) only nullifies the field, it doesn't filter the
+// parent document. So we fetch the property IDs owned by user2 first,
+// then check if a paid booking links user1 + those properties.
+// -----------------------------------------------------------------------
 const validateBookingExists = async (user1Id, user2Id) => {
-    // Check if user1 is renter and user2 is owner
-    const bookingAsRenter = await Booking.findOne({ 
-        renterId: user1Id,
-        paymentStatus: 'paid'
-    }).populate({
-        path: 'propertyId',
-        match: { ownerId: user2Id }
-    });
-    
-    if (bookingAsRenter && bookingAsRenter.propertyId) return true;
+    // Scenario A: user1 is renter, user2 is owner
+    const propsOwnedByUser2 = await Property.find({ ownerId: user2Id }).select('_id');
+    const propIdsA = propsOwnedByUser2.map(p => p._id);
+    if (propIdsA.length > 0) {
+        const bookingA = await Booking.findOne({
+            renterId: user1Id,
+            propertyId: { $in: propIdsA },
+            paymentStatus: 'paid'
+        });
+        if (bookingA) return true;
+    }
 
-    // Check if user1 is owner and user2 is renter
-    const bookingAsOwner = await Booking.findOne({ 
-        renterId: user2Id,
-        paymentStatus: 'paid'
-    }).populate({
-        path: 'propertyId',
-        match: { ownerId: user1Id }
-    });
-
-    if (bookingAsOwner && bookingAsOwner.propertyId) return true;
+    // Scenario B: user1 is owner, user2 is renter
+    const propsOwnedByUser1 = await Property.find({ ownerId: user1Id }).select('_id');
+    const propIdsB = propsOwnedByUser1.map(p => p._id);
+    if (propIdsB.length > 0) {
+        const bookingB = await Booking.findOne({
+            renterId: user2Id,
+            propertyId: { $in: propIdsB },
+            paymentStatus: 'paid'
+        });
+        if (bookingB) return true;
+    }
 
     return false;
+};
+
+// FIXED: Get property context using proper two-step lookup
+const getPropertyContext = async (userId, partnerId) => {
+    try {
+        // Check if userId is renter, partnerId is owner
+        const propsOfPartner = await Property.find({ ownerId: partnerId }).select('_id title');
+        if (propsOfPartner.length > 0) {
+            const b = await Booking.findOne({
+                renterId: userId,
+                propertyId: { $in: propsOfPartner.map(p => p._id) },
+                paymentStatus: 'paid'
+            });
+            if (b) {
+                const prop = propsOfPartner.find(p => p._id.toString() === b.propertyId.toString());
+                return prop ? prop.title : null;
+            }
+        }
+
+        // Check if partnerId is renter, userId is owner
+        const propsOfUser = await Property.find({ ownerId: userId }).select('_id title');
+        if (propsOfUser.length > 0) {
+            const b = await Booking.findOne({
+                renterId: partnerId,
+                propertyId: { $in: propsOfUser.map(p => p._id) },
+                paymentStatus: 'paid'
+            });
+            if (b) {
+                const prop = propsOfUser.find(p => p._id.toString() === b.propertyId.toString());
+                return prop ? prop.title : null;
+            }
+        }
+    } catch (e) {
+        console.error('getPropertyContext error:', e.message);
+    }
+    return null;
 };
 
 exports.getConversations = async (req, res) => {
@@ -42,7 +85,9 @@ exports.getConversations = async (req, res) => {
         const latestMessages = [];
 
         chats.forEach(chat => {
-            const partnerId = chat.sender.toString() === userId ? chat.receiver.toString() : chat.sender.toString();
+            const partnerId = chat.sender.toString() === userId
+                ? chat.receiver.toString()
+                : chat.sender.toString();
             if (!conversationPartners.has(partnerId)) {
                 conversationPartners.add(partnerId);
                 latestMessages.push(chat);
@@ -56,28 +101,14 @@ exports.getConversations = async (req, res) => {
 
         const formattedConversations = await Promise.all(populatedConversations.map(async (c) => {
             const partner = c.sender._id.toString() === userId ? c.receiver : c.sender;
-            
+
             const unreadCount = await Chat.countDocuments({
                 sender: partner._id,
                 receiver: userId,
                 read: false
             });
 
-            // Try to find the booking/property context for this conversation
-            let propertyContext = null;
-            const booking = await Booking.findOne({
-                $or: [
-                    { renterId: userId, paymentStatus: 'paid' },
-                    { renterId: partner._id, paymentStatus: 'paid' }
-                ]
-            }).populate({
-                path: 'propertyId',
-                match: { $or: [{ ownerId: userId }, { ownerId: partner._id }] },
-                select: 'title ownerId'
-            });
-            if (booking && booking.propertyId) {
-                propertyContext = booking.propertyId.title;
-            }
+            const propertyContext = await getPropertyContext(userId, partner._id.toString());
 
             return {
                 partnerId: partner._id,
@@ -130,14 +161,6 @@ exports.getChatMessages = async (req, res) => {
         const userId = req.user.userId;
         const targetUserId = req.params.targetUserId;
 
-        // Security check: Must have a booking (Optional but requested)
-        const hasBooking = await validateBookingExists(userId, targetUserId);
-        if (!hasBooking) {
-            // We allow fetching if history already exists even if booking expired, 
-            // but for a new "Contact" it should fail. 
-            // For now, let's just log it and allow if they have a history.
-        }
-
         const messages = await Chat.find({
             $or: [
                 { sender: userId, receiver: targetUserId },
@@ -161,26 +184,12 @@ exports.getChatPartnerInfo = async (req, res) => {
         const partner = await User.findById(targetUserId).select('username email');
         if (!partner) return res.status(404).json({ error: 'User not found' });
 
-        // Find the linking booking to show property context
-        let propertyContext = null;
-        const booking = await Booking.findOne({
-            $or: [
-                { renterId: userId, paymentStatus: 'paid' },
-                { renterId: targetUserId, paymentStatus: 'paid' }
-            ]
-        }).populate({
-            path: 'propertyId',
-            match: { $or: [{ ownerId: userId }, { ownerId: targetUserId }] },
-            select: 'title'
-        });
-        if (booking && booking.propertyId) {
-            propertyContext = booking.propertyId.title;
-        }
+        const propertyContext = await getPropertyContext(userId, targetUserId);
 
-        res.json({ 
-            partnerName: partner.username, 
+        res.json({
+            partnerName: partner.username,
             partnerEmail: partner.email,
-            propertyContext 
+            propertyContext
         });
     } catch (error) {
         console.error('Error fetching chat partner info:', error);
@@ -192,7 +201,7 @@ exports.saveMessage = async (senderId, receiverId, message) => {
     try {
         const hasBooking = await validateBookingExists(senderId, receiverId);
         if (!hasBooking) {
-            throw new Error("No confirmed booking found between users.");
+            throw new Error("No confirmed booking found between these users.");
         }
 
         const newChat = new Chat({
