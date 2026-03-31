@@ -1,31 +1,49 @@
 import React from 'react'
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-import Home from './components/Home/Home';
-import AboutUs from './components/AboutUs/AboutUs';
-import Contact from './components/Contact/Contact';
-import Villas from './components/Villa/Villas';
-import SingleVilla from './components/Villa/SingleVilla';
-import TermsAndConditions from './components/TermsAndConditions/TermsAndConditions';
 import Navbar from './components/Navbar/Navbar';
-import Footer from './components/Footer/Footer';
-import './App.css'
+import HeroSection from './components/Home/HeroSection';
+import PropertyList from './components/Property/PropertyList';
+import PropertyDetails from './components/Property/PropertyDetails';
+import CheckoutPage from './components/Checkout/CheckoutPage';
+import OwnerDashboard from './components/Dashboard/OwnerDashboard';
+import UserProfile from './components/Dashboard/UserProfile';
+import AuthModal from './components/Auth/AuthModal';
+import { AuthProvider } from './context/AuthContext';
+import './App.css';
+
+import BookingSuccess from './components/Checkout/BookingSuccess';
+import RenterDashboard from './components/Dashboard/RenterDashboard';
+import TrendingProperties from './components/Home/TrendingProperties';
+import AdminLogin from './components/Admin/AdminLogin';
+import AdminDashboard from './components/Admin/AdminDashboard';
+import Inbox from './components/Chat/Inbox';
 
 const App = () => {
   return (
-    <>
+    <AuthProvider>
       <Router>
-        <Navbar/>
+        <AuthModal />
+        <Navbar />
         <Routes>
-          <Route path='/' element={<Home/>}/>
-          <Route path='/aboutus' element={<AboutUs/>}/>
-          <Route path='/contact' element={<Contact/>}/>
-          <Route path='/termsandconditions' element={<TermsAndConditions/>}/>
-          <Route path='/villas' element={<Villas/>}/>
-          <Route path='/villa/:id' element={<SingleVilla/>}/>
+            <Route path="/" element={
+                <>
+                    <HeroSection />
+                    <TrendingProperties />
+                </>
+            } />
+            <Route path="/explore" element={<PropertyList />} />
+            <Route path="/property/:id" element={<PropertyDetails />} />
+            <Route path="/checkout/:id" element={<CheckoutPage />} />
+            <Route path="/booking-success" element={<BookingSuccess />} />
+            <Route path="/dashboard" element={<OwnerDashboard />} />
+            <Route path="/renter-dashboard" element={<RenterDashboard />} />
+            <Route path="/profile" element={<UserProfile />} />
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/messages" element={<Inbox />} />
         </Routes>
-        <Footer/>
       </Router>
-    </>
+    </AuthProvider>
   )
 }
 

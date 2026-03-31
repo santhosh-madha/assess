@@ -25,4 +25,15 @@ router.post(
   authController.login
 );
 
+// Admin Login route
+router.post(
+  '/admin-login',
+  [
+    check('email').isEmail().withMessage('Invalid email'),
+    check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+    check('passcode').not().isEmpty().withMessage('Master passcode is required')
+  ],
+  authController.adminLogin
+);
+
 module.exports = router;

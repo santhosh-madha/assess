@@ -1,0 +1,50 @@
+.checkout-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 20px;
+}
+
+.checkout-card {
+  width: 100%;
+  max-width: 500px;
+  padding: 40px;
+  background: white; /* Stripe elements prefer a solid white base to look standard */
+}
+
+.checkout-card h2 {
+  margin-bottom: 10px;
+  color: var(--text-main);
+}
+
+.checkout-card p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 30px;
+}
+
+.payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pay-button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+}
+
+.payment-message {
+  color: #ef4444; /* Error red */
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.error-text {
+  color: #ef4444;
+  font-weight: 600;
+}

@@ -1,0 +1,25 @@
+﻿Server running on port 5000
+node : C:\Users\madha\Desktop\Property 
+Rental Platform\assess\server\controllers\pr
+oduct.js:129
+At line:1 char:1
++ node app 2>&1 | Out-File -Encoding utf8 
+log.txt
++ ~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: 
+    (C:\Users\madha\...\product.js:129:Str  
+  ing) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommand 
+   Error
+ 
+        console.error("Failed:", e.message);
+                                 ^
+
+ReferenceError: e is not defined
+    at C:\Users\madha\Desktop\Property 
+Rental Platform\assess\server\controllers\pr
+oduct.js:129:34
+    at process.processTicksAndRejections 
+(node:internal/process/task_queues:104:5)
+
+Node.js v25.8.2

@@ -6,6 +6,7 @@ const chatSchema = new mongoose.Schema({
   receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   message: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
+  read: { type: Boolean, default: false },
 });
 
 const Chat = mongoose.model('Chat', chatSchema);
