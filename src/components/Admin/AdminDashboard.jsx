@@ -253,13 +253,16 @@ const AdminDashboard = () => {
                                                 fill="#8884d8"
                                                 paddingAngle={5}
                                                 dataKey="value"
+                                                nameKey="name"
+                                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                                labelLine={false}
                                             >
                                                 {[ '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8' ].map((color, index) => (
                                                     <Cell key={`cell-${index}`} fill={color} />
                                                 ))}
                                             </Pie>
-                                            <Tooltip />
-                                            <Legend verticalAlign="bottom" height={36}/>
+                                            <Tooltip formatter={(value, name) => [value, name]} />
+                                            <Legend verticalAlign="bottom" height={36} formatter={(value) => value} />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -267,48 +270,64 @@ const AdminDashboard = () => {
 
                             {/* Revenue by Host Bar */}
                             <div className="chart-card glass-panel" style={{gridColumn: 'span 2'}}>
-                                <h3>Revenue Generator Leaderboard (Top 10 Hosts)</h3>
-                                <div style={{ width: '100%', height: 350 }}>
-                                    <ResponsiveContainer>
-                                        <BarChart 
-                                            layout="vertical" 
-                                            data={analyticsData.revenueByOwner}
-                                            margin={{ left: 50, right: 30 }}
-                                        >
-                                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#eee" />
-                                            <XAxis type="number" stroke="#718096" fontSize={12} />
-                                            <YAxis dataKey="name" type="category" stroke="#718096" fontSize={11} width={80} />
-                                            <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
-                                            <Bar dataKey="value" fill="var(--accent-secondary)" radius={[0, 4, 4, 0]} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
+                                <h3>🏆 Revenue Generator Leaderboard (Top 10 Hosts)</h3>
+                                {analyticsData.revenueByOwner?.length > 0 ? (
+                                    <div style={{ width: '100%', height: 350 }}>
+                                        <ResponsiveContainer>
+                                            <BarChart 
+                                                layout="vertical" 
+                                                data={analyticsData.revenueByOwner}
+                                                margin={{ left: 20, right: 40, top: 10, bottom: 10 }}
+                                            >
+                                                <CartesianGrid strokeDasharray="3 3" horizontal={false} vertical={true} stroke="#eee" />
+                                                <XAxis type="number" stroke="#718096" fontSize={12} tickFormatter={(v) => `$${v}`} />
+                                                <YAxis dataKey="name" type="category" stroke="#718096" fontSize={12} width={100} />
+                                                <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Revenue']} />
+                                                <Bar dataKey="value" fill="var(--accent-secondary)" radius={[0, 6, 6, 0]} label={{ position: 'right', fontSize: 11, formatter: (v) => `$${v.toLocaleString()}` }} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                ) : (
+                                    <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', flexDirection: 'column', gap: '8px' }}>
+                                        <span style={{fontSize: '2rem'}}>📊</span>
+                                        <p>No revenue data yet. Bookings with paid status will appear here.</p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Revenue by Type Pie */}
                             <div className="chart-card glass-panel">
-                                <h3>Revenue Distribution by Category</h3>
-                                <div style={{ width: '100%', height: 300 }}>
-                                    <ResponsiveContainer>
-                                        <PieChart>
-                                            <Pie
-                                                data={analyticsData.revenueByType}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={60}
-                                                outerRadius={80}
-                                                paddingAngle={5}
-                                                dataKey="value"
-                                            >
-                                                {[ '#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6' ].map((color, index) => (
-                                                    <Cell key={`cell-${index}`} fill={color} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip formatter={(value) => [`$${value}`, 'Total Revenue']} />
-                                            <Legend verticalAlign="bottom" />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
+                                <h3>💰 Revenue by Property Category</h3>
+                                {analyticsData.revenueByType?.length > 0 ? (
+                                    <div style={{ width: '100%', height: 320 }}>
+                                        <ResponsiveContainer>
+                                            <PieChart>
+                                                <Pie
+                                                    data={analyticsData.revenueByType}
+                                                    cx="50%"
+                                                    cy="45%"
+                                                    innerRadius={55}
+                                                    outerRadius={85}
+                                                    paddingAngle={4}
+                                                    dataKey="value"
+                                                    nameKey="name"
+                                                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                                                    labelLine={true}
+                                                >
+                                                    {[ '#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6' ].map((color, index) => (
+                                                        <Cell key={`cell-${index}`} fill={color} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip formatter={(value, name) => [`$${value.toLocaleString()}`, name]} />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                ) : (
+                                    <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', flexDirection: 'column', gap: '8px' }}>
+                                        <span style={{fontSize: '2rem'}}>🏠</span>
+                                        <p>No revenue by category yet.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
