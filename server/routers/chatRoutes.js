@@ -10,6 +10,9 @@ router.get('/conversations', authenticateUser, chatController.getConversations);
 // Get global unread message count
 router.get('/unread-count', authenticateUser, chatController.getGlobalUnreadCount);
 
+// NEW: Get partner name + property context for a chat (used when starting a new conversation)
+router.get('/partner-info/:targetUserId', authenticateUser, chatController.getChatPartnerInfo);
+
 // Get chat history with a specific user
 router.get('/history/:targetUserId', authenticateUser, chatController.getChatMessages);
 

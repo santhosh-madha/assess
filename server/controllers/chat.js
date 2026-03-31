@@ -1,12 +1,16 @@
 // server/controllers/chat.js
-const Chat = require("../models/Chat");
-const Booking = require("../models/Booking");
-const Property = require("../models/Property");
+const Chat = require('../models/Chat');
+const Booking = require('../models/Booking');
+const Property = require('../models/Property');
+const User = require('../models/User');
 
-// Validate if two users have a confirmed booking between them
+// Validate if two users have a PAID/confirmed booking between them
 const validateBookingExists = async (user1Id, user2Id) => {
     // Check if user1 is renter and user2 is owner
-    const bookingAsRenter = await Booking.findOne({ renterId: user1Id }).populate({
+    const bookingAsRenter = await Booking.findOne({ 
+        renterId: user1Id,
+        paymentStatus: 'paid'
+    }).populate({
         path: 'propertyId',
         match: { ownerId: user2Id }
     });
@@ -14,7 +18,10 @@ const validateBookingExists = async (user1Id, user2Id) => {
     if (bookingAsRenter && bookingAsRenter.propertyId) return true;
 
     // Check if user1 is owner and user2 is renter
-    const bookingAsOwner = await Booking.findOne({ renterId: user2Id }).populate({
+    const bookingAsOwner = await Booking.findOne({ 
+        renterId: user2Id,
+        paymentStatus: 'paid'
+    }).populate({
         path: 'propertyId',
         match: { ownerId: user1Id }
     });
@@ -27,7 +34,6 @@ const validateBookingExists = async (user1Id, user2Id) => {
 exports.getConversations = async (req, res) => {
     try {
         const userId = req.user.userId;
-        // Find all unique users this person has chatted with
         const chats = await Chat.find({
             $or: [{ sender: userId }, { receiver: userId }]
         }).sort({ timestamp: -1 });
@@ -43,21 +49,35 @@ exports.getConversations = async (req, res) => {
             }
         });
 
-        // Populate the partner details
         const populatedConversations = await Chat.populate(latestMessages, {
             path: 'sender receiver',
-            select: 'username email imageUrl'
+            select: 'username email'
         });
 
         const formattedConversations = await Promise.all(populatedConversations.map(async (c) => {
             const partner = c.sender._id.toString() === userId ? c.receiver : c.sender;
             
-            // Calculate unread count specifically for messages RECEIVED by current user from this partner
             const unreadCount = await Chat.countDocuments({
                 sender: partner._id,
                 receiver: userId,
                 read: false
             });
+
+            // Try to find the booking/property context for this conversation
+            let propertyContext = null;
+            const booking = await Booking.findOne({
+                $or: [
+                    { renterId: userId, paymentStatus: 'paid' },
+                    { renterId: partner._id, paymentStatus: 'paid' }
+                ]
+            }).populate({
+                path: 'propertyId',
+                match: { $or: [{ ownerId: userId }, { ownerId: partner._id }] },
+                select: 'title ownerId'
+            });
+            if (booking && booking.propertyId) {
+                propertyContext = booking.propertyId.title;
+            }
 
             return {
                 partnerId: partner._id,
@@ -65,7 +85,8 @@ exports.getConversations = async (req, res) => {
                 partnerEmail: partner.email,
                 lastMessage: c.message,
                 timestamp: c.timestamp,
-                unreadCount: unreadCount
+                unreadCount,
+                propertyContext
             };
         }));
 
@@ -131,12 +152,47 @@ exports.getChatMessages = async (req, res) => {
     }
 };
 
+// NEW: Get partner info for chat initiation (name + property context)
+exports.getChatPartnerInfo = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { targetUserId } = req.params;
+
+        const partner = await User.findById(targetUserId).select('username email');
+        if (!partner) return res.status(404).json({ error: 'User not found' });
+
+        // Find the linking booking to show property context
+        let propertyContext = null;
+        const booking = await Booking.findOne({
+            $or: [
+                { renterId: userId, paymentStatus: 'paid' },
+                { renterId: targetUserId, paymentStatus: 'paid' }
+            ]
+        }).populate({
+            path: 'propertyId',
+            match: { $or: [{ ownerId: userId }, { ownerId: targetUserId }] },
+            select: 'title'
+        });
+        if (booking && booking.propertyId) {
+            propertyContext = booking.propertyId.title;
+        }
+
+        res.json({ 
+            partnerName: partner.username, 
+            partnerEmail: partner.email,
+            propertyContext 
+        });
+    } catch (error) {
+        console.error('Error fetching chat partner info:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
 exports.saveMessage = async (senderId, receiverId, message) => {
     try {
-        // Validation: Booking must exist
         const hasBooking = await validateBookingExists(senderId, receiverId);
         if (!hasBooking) {
-            throw new Error("No active booking found between users.");
+            throw new Error("No confirmed booking found between users.");
         }
 
         const newChat = new Chat({

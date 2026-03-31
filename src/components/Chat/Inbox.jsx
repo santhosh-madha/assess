@@ -12,6 +12,7 @@ const Inbox = () => {
     const [conversations, setConversations] = useState([]);
     const [selectedPartnerId, setSelectedPartnerId] = useState(null);
     const [selectedPartnerName, setSelectedPartnerName] = useState('');
+    const [selectedPropertyContext, setSelectedPropertyContext] = useState('');
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(false);
@@ -24,12 +25,9 @@ const Inbox = () => {
             await axios.put(`${import.meta.env.VITE_API_URL}/api/chat/read/${partnerId}`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            // Update local state to clear unread count for this partner
             setConversations(prev => prev.map(c => 
                 c.partnerId === partnerId ? { ...c, unreadCount: 0 } : c
             ));
-            
-            // Notify other components (Navbar) via socket
             if (socket.current) {
                 socket.current.emit('markRead', { userId: user.userId });
             }
@@ -45,7 +43,6 @@ const Inbox = () => {
             socket.current.emit('join', user.userId);
 
             socket.current.on('message', (incoming) => {
-                // If it's from the person we are currently chatting with, add to list
                 setMessages(prev => {
                     const isFromPartner = incoming.sender === selectedPartnerId || incoming.receiver === selectedPartnerId;
                     if (isFromPartner) {
@@ -53,8 +50,6 @@ const Inbox = () => {
                     }
                     return prev;
                 });
-                
-                // Refresh conversation list to show latest message preview
                 fetchConversations();
             });
 
@@ -69,9 +64,15 @@ const Inbox = () => {
             // Handle cross-dashboard navigation via URL query
             const params = new URLSearchParams(location.search);
             const targetUser = params.get('user');
+            const propertyHint = params.get('property'); // e.g. "Sunny Beach Villa"
+
             if (targetUser) {
                 setSelectedPartnerId(targetUser);
-                // We'll fetch name from conversation list once it loads
+                if (propertyHint) {
+                    setSelectedPropertyContext(decodeURIComponent(propertyHint));
+                }
+                // Resolve partner name from API if no prior conversation
+                resolvePartnerInfo(targetUser, propertyHint);
             }
         }
     }, [token, location]);
@@ -90,6 +91,21 @@ const Inbox = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    const resolvePartnerInfo = async (targetUserId, propertyHint) => {
+        try {
+            const res = await axios.get(
+                `${import.meta.env.VITE_API_URL}/api/chat/partner-info/${targetUserId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setSelectedPartnerName(res.data.partnerName || 'User');
+            if (!propertyHint && res.data.propertyContext) {
+                setSelectedPropertyContext(res.data.propertyContext);
+            }
+        } catch (error) {
+            console.error("Failed to resolve partner info", error);
+        }
+    };
+
     const fetchConversations = async () => {
         try {
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/chat/conversations`, {
@@ -101,8 +117,13 @@ const Inbox = () => {
             const params = new URLSearchParams(location.search);
             const targetUser = params.get('user');
             if (targetUser) {
-                const found = res.data.find(c => c.partnerId === targetUser);
-                if (found) setSelectedPartnerName(found.partnerName);
+                const found = res.data.find(c => c.partnerId.toString() === targetUser);
+                if (found) {
+                    setSelectedPartnerName(found.partnerName);
+                    if (!selectedPropertyContext && found.propertyContext) {
+                        setSelectedPropertyContext(found.propertyContext);
+                    }
+                }
             }
         } catch (error) {
             console.error("Failed to fetch conversations", error);
@@ -133,25 +154,24 @@ const Inbox = () => {
             message: newMessage.trim()
         };
 
-        // Real-time send via socket
         socket.current.emit('sendMessage', chatData);
         
-        // Optimistic UI update
         const tempMsg = {
             sender: user.userId,
             receiver: selectedPartnerId,
             message: newMessage.trim(),
             timestamp: new Date().toISOString(),
-            _id: Date.now() // temporary ID
+            _id: Date.now()
         };
         setMessages([...messages, tempMsg]);
         setNewMessage('');
     };
 
-    const selectConversation = async (partnerId, partnerName) => {
-        setSelectedPartnerId(partnerId);
-        setSelectedPartnerName(partnerName);
-        markAsRead(partnerId);
+    const selectConversation = async (conv) => {
+        setSelectedPartnerId(conv.partnerId);
+        setSelectedPartnerName(conv.partnerName);
+        setSelectedPropertyContext(conv.propertyContext || '');
+        markAsRead(conv.partnerId);
     };
 
     return (
@@ -166,16 +186,19 @@ const Inbox = () => {
                             <div 
                                 key={conv.partnerId} 
                                 className={`conversation-item ${selectedPartnerId === conv.partnerId ? 'active' : ''}`}
-                                onClick={() => selectConversation(conv.partnerId, conv.partnerName)}
+                                onClick={() => selectConversation(conv)}
                             >
                                 <div className="partner-avatar">
-                                    {conv.partnerName.charAt(0).toUpperCase()}
+                                    {conv.partnerName?.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="conv-info">
                                     <div className="conv-top-row">
                                         <span className="conv-name">{conv.partnerName}</span>
                                         {conv.unreadCount > 0 && <span className="conv-unread-badge">{conv.unreadCount}</span>}
                                     </div>
+                                    {conv.propertyContext && (
+                                        <span className="conv-property-tag">🏠 {conv.propertyContext}</span>
+                                    )}
                                     <span className="conv-previewText">{conv.lastMessage}</span>
                                 </div>
                             </div>
@@ -189,13 +212,30 @@ const Inbox = () => {
                     <>
                         <div className="chat-header">
                             <button className="chat-back-btn" onClick={() => setSelectedPartnerId(null)}>←</button>
-                            <h4>Chat with <span>{selectedPartnerName || 'User'}</span></h4>
+                            <div className="chat-header-info">
+                                <div className="chat-partner-avatar-sm">
+                                    {selectedPartnerName?.charAt(0).toUpperCase() || 'U'}
+                                </div>
+                                <div>
+                                    <h4 style={{margin: 0}}>
+                                        {selectedPartnerName || 'User'}
+                                    </h4>
+                                    {selectedPropertyContext && (
+                                        <span className="chat-property-context">🏠 Re: {selectedPropertyContext}</span>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                         <div className="chat-messages">
                             {loading ? (
                                 <p>Loading history...</p>
                             ) : messages.length === 0 ? (
-                                <p className="empty-chat-msg">Start your conversation with {selectedPartnerName}!</p>
+                                <div className="empty-chat-starter">
+                                    <p>💬 Start your conversation with <strong>{selectedPartnerName}</strong></p>
+                                    {selectedPropertyContext && (
+                                        <p style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px'}}>regarding <strong>{selectedPropertyContext}</strong></p>
+                                    )}
+                                </div>
                             ) : (
                                 messages.map((m, idx) => (
                                     <div 
@@ -212,7 +252,7 @@ const Inbox = () => {
                         <form className="chat-input-row" onSubmit={handleSendMessage}>
                             <input 
                                 type="text" 
-                                placeholder="Type a message..." 
+                                placeholder={`Message ${selectedPartnerName || 'User'}...`}
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
                             />

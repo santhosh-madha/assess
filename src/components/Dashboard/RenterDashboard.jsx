@@ -90,7 +90,7 @@ const RenterDashboard = () => {
                                                 <button 
                                                     className="btn-outline" 
                                                     style={{ marginTop: '12px', width: '100%', fontSize: '0.8rem', padding: '8px' }}
-                                                    onClick={() => navigate(`/messages?user=${prop.ownerId._id}`)}
+                                                    onClick={() => navigate(`/messages?user=${prop.ownerId._id}&property=${encodeURIComponent(prop.title)}`)}
                                                 >
                                                     💬 Message Host
                                                 </button>

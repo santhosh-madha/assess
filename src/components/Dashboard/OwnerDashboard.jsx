@@ -275,11 +275,11 @@ const OwnerDashboard = () => {
                                                         {booking.paymentStatus === 'paid' ? 'Paid & Confirmed' : 'Pending Payment'}
                                                     </span>
 
-                                                    {booking.paymentStatus === 'paid' && (
+                                                    {booking.paymentStatus === 'paid' && booking.renterId && (
                                                         <button 
                                                             className="btn-outline" 
                                                             style={{ marginTop: '12px', width: '100%', fontSize: '0.8rem', padding: '8px' }}
-                                                            onClick={() => navigate(`/messages?user=${booking.renterId._id}`)}
+                                                            onClick={() => navigate(`/messages?user=${booking.renterId._id}&property=${encodeURIComponent(prop.title)}`)}
                                                         >
                                                             💬 Message Renter
                                                         </button>
