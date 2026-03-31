@@ -9,6 +9,8 @@ const PropertyList = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [showMobileFilters, setShowMobileFilters] = useState(false);
+    const [gridSize, setGridSize] = useState('medium'); 
+
 
     const todayRaw = new Date();
     const today = todayRaw.toISOString().split('T')[0];
