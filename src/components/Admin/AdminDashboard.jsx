@@ -17,7 +17,7 @@ const AdminDashboard = () => {
     const [usersList, setUsersList] = useState([]);
     const [propertiesList, setPropertiesList] = useState([]);
     const [bookingsList, setBookingsList] = useState([]);
-    const [analyticsData, setAnalyticsData] = useState({ trendData: [], distData: [] });
+    const [analyticsData, setAnalyticsData] = useState({ trendData: [], distData: [], revenueByOwner: [], revenueByType: [] });
     const [range, setRange] = useState(6);
     
     // User Drill-down State
@@ -264,6 +264,52 @@ const AdminDashboard = () => {
                                     </ResponsiveContainer>
                                 </div>
                             </div>
+
+                            {/* Revenue by Host Bar */}
+                            <div className="chart-card glass-panel" style={{gridColumn: 'span 2'}}>
+                                <h3>Revenue Generator Leaderboard (Top 10 Hosts)</h3>
+                                <div style={{ width: '100%', height: 350 }}>
+                                    <ResponsiveContainer>
+                                        <BarChart 
+                                            layout="vertical" 
+                                            data={analyticsData.revenueByOwner}
+                                            margin={{ left: 50, right: 30 }}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#eee" />
+                                            <XAxis type="number" stroke="#718096" fontSize={12} />
+                                            <YAxis dataKey="name" type="category" stroke="#718096" fontSize={11} width={80} />
+                                            <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
+                                            <Bar dataKey="value" fill="var(--accent-secondary)" radius={[0, 4, 4, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Revenue by Type Pie */}
+                            <div className="chart-card glass-panel">
+                                <h3>Revenue Distribution by Category</h3>
+                                <div style={{ width: '100%', height: 300 }}>
+                                    <ResponsiveContainer>
+                                        <PieChart>
+                                            <Pie
+                                                data={analyticsData.revenueByType}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={60}
+                                                outerRadius={80}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                {[ '#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6' ].map((color, index) => (
+                                                    <Cell key={`cell-${index}`} fill={color} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip formatter={(value) => [`$${value}`, 'Total Revenue']} />
+                                            <Legend verticalAlign="bottom" />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -343,6 +389,7 @@ const AdminDashboard = () => {
                                         <th>Owner (Host)</th>
                                         <th>Renter (Guest)</th>
                                         <th>Stay Duration</th>
+                                        <th>Booking Time</th>
                                         <th>Revenue ($)</th>
                                         <th>Payment</th>
                                     </tr>
@@ -361,6 +408,9 @@ const AdminDashboard = () => {
                                             </td>
                                             <td style={{fontSize: '0.8rem'}}>
                                                 {new Date(b.checkInDate).toLocaleDateString()} <br/> {new Date(b.checkOutDate).toLocaleDateString()}
+                                            </td>
+                                            <td style={{fontSize: '0.75rem', color: 'var(--text-muted)'}}>
+                                                {new Date(b.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                                             </td>
                                             <td style={{fontWeight: 800, color: '#10b981'}}>${b.totalAmount}</td>
                                             <td>

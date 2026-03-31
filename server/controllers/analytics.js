@@ -38,7 +38,7 @@ exports.getAdminAnalytics = async (req, res) => {
             };
         });
 
-        // 2. Property Distribution
+        // 2. Property Distribution (Counts)
         const properties = await Property.find();
         const propertyTypes = {};
         properties.forEach(p => {
@@ -49,7 +49,34 @@ exports.getAdminAnalytics = async (req, res) => {
             value: propertyTypes[type]
         }));
 
-        res.json({ trendData, distData });
+        // 3. Revenue by Owner (Top 10)
+        const allPaidBookings = await Booking.find({ paymentStatus: 'paid' }).populate({
+            path: 'propertyId',
+            populate: { path: 'ownerId', select: 'username' }
+        });
+
+        const ownerRevenue = {};
+        allPaidBookings.forEach(b => {
+             const ownerName = b.propertyId?.ownerId?.username || 'Unknown Host';
+             ownerRevenue[ownerName] = (ownerRevenue[ownerName] || 0) + b.totalAmount;
+        });
+        const revenueByOwner = Object.keys(ownerRevenue)
+            .map(name => ({ name, value: ownerRevenue[name] }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 10);
+
+        // 4. Revenue by Property Type 
+        const typeRevenue = {};
+        allPaidBookings.forEach(b => {
+            const type = b.propertyId?.propertyType || 'other';
+            typeRevenue[type] = (typeRevenue[type] || 0) + b.totalAmount;
+        });
+        const revenueByType = Object.keys(typeRevenue).map(type => ({
+            name: type.charAt(0).toUpperCase() + type.slice(1),
+            value: typeRevenue[type]
+        }));
+
+        res.json({ trendData, distData, revenueByOwner, revenueByType });
     } catch (error) {
         console.error("Admin Analytics Error:", error);
         res.status(500).json({ error: "Internal Server Error" });
