@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import axios from 'axios';
 import io from 'socket.io-client';
@@ -7,6 +7,7 @@ import './Navbar.css';
 
 const Navbar = () => {
   const { user, logout, token, toggleAuthModal } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [menuOpen, setMenuOpen] = React.useState(false);
 
@@ -93,7 +94,7 @@ const Navbar = () => {
               <span className="user-greeting">
                 Hi, {user.firstName || user.email.split('@')[0]}
               </span>
-              <button className="btn-outline" onClick={() => { logout(); closeMenu(); }}>Log Out</button>
+              <button className="btn-outline" onClick={() => { logout(); navigate('/'); closeMenu(); }}>Log Out</button>
             </>
           ) : (
             <>
