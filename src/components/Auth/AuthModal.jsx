@@ -15,8 +15,18 @@ const AuthModal = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
     const [role, setRole] = useState('renter'); // Default role 'renter'
+    const [confirmPassword, setConfirmPassword] = useState('');
+
+    // --- Fresh Slate Logic: Clear form when modal opens or mode changes ---
+    React.useEffect(() => {
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setUsername('');
+        setError(null);
+        setLoading(false);
+    }, [isAuthModalOpen, isLoginMode]);
 
     if (!isAuthModalOpen) return null;
 
