@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import Navbar from './components/Navbar/Navbar';
 import HeroSection from './components/Home/HeroSection';
@@ -19,10 +19,15 @@ import AdminDashboard from './components/Admin/AdminDashboard';
 import Inbox from './components/Chat/Inbox';
 import About from './components/About/About';
 import Footer from './components/Footer/Footer';
+import AuthLoadingOverlay from './components/Auth/AuthLoadingOverlay';
+import { AuthContext } from './context/AuthContext';
 
 const App = () => {
+  const { isAuthMoving } = useContext(AuthContext);
+  
   return (
-    <AuthProvider>
+    <>
+        {isAuthMoving && <AuthLoadingOverlay message={isAuthMoving === 'login' ? 'Syncing Session...' : 'Clearing Vault...'} />}
       <Router>
         <AuthModal />
         <Navbar />
@@ -47,7 +52,7 @@ const App = () => {
         </Routes>
         <Footer />
       </Router>
-    </AuthProvider>
+    </>
   )
 }
 

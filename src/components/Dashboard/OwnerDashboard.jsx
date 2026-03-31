@@ -31,12 +31,16 @@ const OwnerDashboard = () => {
     const [galleryFiles, setGalleryFiles] = useState([]);
 
     useEffect(() => {
+        if (!user && !token) {
+            navigate('/');
+            return;
+        }
         if (user && user.role === 'owner') {
             if (activeTab === 'listings') fetchMyProperties();
             if (activeTab === 'reservations') fetchIncomingReservations();
             if (activeTab === 'analytics') fetchOwnerAnalytics();
         }
-    }, [user, activeTab, range]);
+    }, [user, token, activeTab, range, navigate]);
 
     const fetchMyProperties = async () => {
         setFetchingProperties(true);

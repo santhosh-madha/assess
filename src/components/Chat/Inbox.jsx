@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
 import './Inbox.css';
@@ -8,6 +7,7 @@ import './Inbox.css';
 const Inbox = () => {
     const { user, token } = useContext(AuthContext);
     const location = useLocation();
+    const navigate = useNavigate();
     const [conversations, setConversations] = useState([]);
     const [selectedPartnerId, setSelectedPartnerId] = useState(null);
     const [selectedPartnerName, setSelectedPartnerName] = useState('');
@@ -17,6 +17,13 @@ const Inbox = () => {
     
     const socket = useRef(null);
     const messagesEndRef = useRef(null);
+    
+    // Forced Security Redirect
+    useEffect(() => {
+        if (!user && !token) {
+            navigate('/');
+        }
+    }, [user, token, navigate]);
 
     const markAsRead = async (partnerId) => {
         try {

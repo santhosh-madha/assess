@@ -6,6 +6,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(null);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [isAuthMoving, setIsAuthMoving] = useState(null); // 'login' or 'logout' or null
 
     // Load initial credentials from localStorage if they exist
     useEffect(() => {
@@ -19,11 +20,15 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = (userData, jwtToken) => {
+        setIsAuthMoving('login');
         setUser(userData);
         setToken(jwtToken);
         localStorage.setItem('token', jwtToken);
         localStorage.setItem('user', JSON.stringify(userData));
         setIsAuthModalOpen(false); // Close modal on successful login
+        
+        // Brief transition for UX
+        setTimeout(() => setIsAuthMoving(null), 800);
     };
 
     const updateAuthUser = (updatedFields) => {
@@ -35,10 +40,14 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
+        setIsAuthMoving('logout');
         setUser(null);
         setToken(null);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        
+        // Brief transition for UX
+        setTimeout(() => setIsAuthMoving(null), 800);
     };
 
     const toggleAuthModal = (isOpen) => {
@@ -54,6 +63,7 @@ export const AuthProvider = ({ children }) => {
             logout,
             toggleAuthModal,
             updateAuthUser,
+            isAuthMoving,
         }}>
             {children}
         </AuthContext.Provider>
