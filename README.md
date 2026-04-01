@@ -55,17 +55,7 @@ A full-featured, state-of-the-art platform that allows users to browse, list, re
 
 ---
 
-## 🧑‍💻 Contributing
 
-We welcome contributions to make the platform even better!
-
-1. Fork the repo 🍴
-2. Create your feature branch: `git checkout -b feature/AmazingFeature` 🌿
-3. Commit your changes: `git commit -m "Add some AmazingFeature"` 💾
-4. Push to the branch: `git push origin feature/AmazingFeature` 🚀
-5. Open a Pull Request 🔄
-
----
 
 ## 📄 License
 
