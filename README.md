@@ -4,7 +4,7 @@
 ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
 ![Node.js](https://img.shields.io/badge/Node.js-43853D?style=flat&logo=node.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=flat&logo=mongodb&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
+
 
 A full-featured, state-of-the-art platform that allows users to browse, list, rent, and manage properties with ease. Built with modern JavaScript technologies to ensure smooth performance, robust security, and an exceptional user experience.
 
@@ -14,7 +14,7 @@ A full-featured, state-of-the-art platform that allows users to browse, list, re
 
 **[👉 Experience the Live Platform Here](https://assess-frontend-one.vercel.app/)**
 
-> *(Note: Replace the URL above with the actual deployment link once hosted).*
+
 
 ---
 
