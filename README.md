@@ -65,4 +65,4 @@ This project is licensed under the **MIT License**.
 
 ## 🙋‍♀️ Support & Contact
 
-For any questions, suggestions, or technical support, please open an issue in the repository or contact the maintainer directly.
+For any questions, suggestions, or technical support, please open an issue in the repository.
